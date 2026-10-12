@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# After you connect a domain, replace YOUR-DOMAIN below and keep this line:
+Sitemap: https://YOUR-DOMAIN/sitemap.xml
