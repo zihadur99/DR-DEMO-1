@@ -15,7 +15,11 @@
    - Frames load coarse-to-fine after the page has loaded (every 32nd, 16th … then every frame).
      Scrubbing works from the start; a frame that is not ready yet is replaced by the nearest one.
    - ScrollTrigger only moves a number. Drawing happens on gsap.ticker (requestAnimationFrame),
-     only while the hero is on screen and only when the frame or canvas size changed.
+     only while the hero is on screen and only when the picture would change.
+   - No stepping: the displayed position glides toward the scroll position (frame-rate
+     independent), and the two frames around it are cross-faded, so motion is continuous.
+   - No shaking: while a frame is still decoding, the fallback is always the closest ready frame
+     behind the playhead, never one ahead, so the picture can't jump forward and back.
    - Nothing reads layout during scroll: the canvas size comes from a ResizeObserver, the
      object-fit: cover crop is computed once per resize, and the canvas never holds more
      pixels than the frame has. */
@@ -35,8 +39,8 @@
   const {frames: N, w: SRC_W, h: SRC_H, perFrame: PER} = JSON.parse(canvas.dataset.sets)[SET];
   const url = i => canvas.dataset.src.replace("{set}", SET).replace("{n}", String(i + 1).padStart(4, "0"));
 
-  // decoded-frame budget: about 150 MB on desktop, 60 MB on phones
-  const CAP = Math.max(12, Math.floor((SMALL ? 60e6 : 150e6) / (SRC_W * SRC_H * 4)));
+  // decoded-frame budget: about 180 MB on desktop, 70 MB on phones
+  const CAP = Math.max(24, Math.floor((SMALL ? 70e6 : 180e6) / (SRC_W * SRC_H * 4)));
   const blobs = new Array(N);                  // compressed, kept for every frame
   const decoded = new Map();                   // index -> ImageBitmap | HTMLImageElement
   const decoding = new Set();
@@ -110,36 +114,62 @@
     canvas.width = cw; canvas.height = ch;
     const s = Math.max(cw / SRC_W, ch / SRC_H);              // object-fit: cover
     dw = SRC_W * s; dh = SRC_H * s; dx = (cw - dw) / 2; dy = (ch - dh) / 2;
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = s < .75 ? "medium" : "low";   // "high" is slow on some GPUs and invisible near 1:1
     dirty = true;
     if (!animated) render();
   }
   if (window.ResizeObserver) new ResizeObserver(e => { const r = e[0].contentRect; layout(r.width, r.height); }).observe(canvas);
   else { const fit = () => layout(innerWidth, innerHeight); window.addEventListener("resize", fit); fit(); }
 
-  function nearest(i){
+  // Fallback while a frame is still decoding: the closest ready frame on the side the playhead
+  // came from. It never jumps ahead and then back, which is what reads as shaking.
+  function behind(i, d){
     if (decoded.has(i)) return i;
     let best = -1, bd = Infinity;
-    for (const k of decoded.keys()){ const d = Math.abs(k - i); if (d < bd){ bd = d; best = k; } }
+    for (const k of decoded.keys()){
+      if ((k - i) * d > 0) continue;                         // ahead of the playhead: skip
+      const dist = Math.abs(k - i); if (dist < bd){ bd = dist; best = k; }
+    }
+    if (best >= 0) return best;
+    for (const k of decoded.keys()){ const dist = Math.abs(k - i); if (dist < bd){ bd = dist; best = k; } }
     return best;
   }
 
-  const state = {frame: 0};
-  let dir = 1, lastWant = 0, onScreen = true;
+  const state = {frame: 0};                    // target frame, set by ScrollTrigger
+  const SMOOTH = .2;                           // extra easing per 60 Hz frame (touch scroll is not smoothed by Lenis)
+  let shown = 0, dir = 1, onScreen = true, lastKey = "";
 
   function render(){
     if (!onScreen || !cw) return;
-    const i = Math.max(0, Math.min(N - 1, Math.round(state.frame)));
-    if (i !== lastWant){ dir = i > lastWant ? 1 : -1; lastWant = i; }
-    want = i;
-    // keep the frames just ahead of the playhead decoded, plus a few behind for direction changes
-    for (let k = 0; k <= 10 && decoding.size < 4; k++) decode(i + dir * k);
-    for (let k = 1; k <= 3 && decoding.size < 4; k++) decode(i - dir * k);
-    const f = nearest(i);
-    if (f < 0 || (f === drawn && !dirty)) return;
-    ctx.drawImage(decoded.get(f), dx, dy, dw, dh);
-    drawn = f; dirty = f !== i;                // keep trying until the exact frame is on screen
+    const target = Math.max(0, Math.min(N - 1, state.frame));
+    // frame-rate independent glide toward the target: the same feel at 60, 90 or 120 Hz
+    const r = window.gsap ? gsap.ticker.deltaRatio(60) : 1;
+    shown += (target - shown) * (1 - Math.pow(1 - SMOOTH, r));
+    if (Math.abs(target - shown) < .004) shown = target;
+    if (target !== shown) dir = target > shown ? 1 : -1;
+
+    const a = Math.floor(shown), b = Math.min(N - 1, a + 1), t = shown - a;
+    want = Math.round(shown);
+    // keep the frames ahead of the playhead decoded, plus a few behind for direction changes
+    for (let k = 0; k <= 16 && decoding.size < 6; k++) decode(a + dir * k);
+    for (let k = 1; k <= 4 && decoding.size < 6; k++) decode(a - dir * k);
+
+    // Blend the two frames around the playhead, so motion is continuous instead of stepping
+    // frame by frame. If either is not decoded yet, show the closest ready frame behind.
+    let fa = a, fb = b, alpha = t;
+    if (!decoded.has(a) || (t > .01 && !decoded.has(b))){ fa = behind(dir > 0 ? a : b, dir); fb = fa; alpha = 0; }
+    if (fa < 0) return;
+    const q = Math.round(alpha * 48);           // 48 blend steps are invisible; skips identical redraws
+    const key = fa + "|" + fb + "|" + q;
+    if (key === lastKey && !dirty) return;
+    ctx.globalAlpha = 1;
+    ctx.drawImage(decoded.get(fa), dx, dy, dw, dh);
+    if (fb !== fa && q > 0){ ctx.globalAlpha = q / 48; ctx.drawImage(decoded.get(fb), dx, dy, dw, dh); ctx.globalAlpha = 1; }
+    lastKey = key; drawn = fa;
+    dirty = !(decoded.has(a) && (t <= .01 || decoded.has(b)));   // keep trying until the exact frames are in
+    if (trace) trace.push(fa + alpha);
   }
+  const trace = /[?&]seqdebug/.test(location.search) ? [] : null;
 
   /* ================= reduced motion / no GSAP: a still hero ================= */
   if (!animated){
@@ -164,8 +194,7 @@
       start: "top top",
       end: () => "+=" + LEN(),
       pin,
-      anticipatePin: 1,
-      scrub: true,                              // Lenis already supplies the momentum; no second lag
+      scrub: true,                              // Lenis supplies the momentum; render() adds the final glide
       invalidateOnRefresh: true,
       onUpdate(self){ if (bar) bar.style.transform = `scaleX(${self.progress.toFixed(4)})`; }
     }
@@ -182,9 +211,9 @@
   // draw only while the hero is on screen
   ScrollTrigger.create({
     trigger: hero, start: "top bottom", end: "bottom top",
-    onToggle: self => { onScreen = self.isActive; if (onScreen) dirty = true; }
+    onToggle: self => { onScreen = self.isActive; if (onScreen){ dirty = true; shown = state.frame; } }
   });
   gsap.ticker.add(render);
 
-  window.HeroSequence = {frames: N, set: SET, animated: true, get progress(){ return tl.scrollTrigger ? tl.scrollTrigger.progress : 0; }};
+  window.HeroSequence = {frames: N, set: SET, animated: true, trace, get progress(){ return tl.scrollTrigger ? tl.scrollTrigger.progress : 0; }};
 })();

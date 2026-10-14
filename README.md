@@ -34,14 +34,16 @@ site.webmanifest, robots.txt, sitemap.xml
 - **One clock.** Lenis, GSAP ScrollTrigger and the hero canvas all run on `gsap.ticker`, which is a single `requestAnimationFrame` loop. Nothing else runs per frame.
 - **Hero length matches the clip.** The hero is pinned for exactly `frames × perFrame × screen height` of scroll (`data-sets` on `#seqCanvas`). Desktop: 240 frames × 0.65% ≈ 1.4 screens. Phones: 120 frames × 1.1% ≈ 1.3 screens. The last frame lands exactly when the pin releases and About comes straight up behind it, so there is no empty scrolling. A shorter clip automatically gets a shorter hero.
 - **Copy over the clip.** Two short lines fade through, then the welcome headline and booking buttons appear and stay as the hero scrolls away. They are the three `.beat` blocks in `index.html`.
-- **Reveals.** Headings rise word by word and blocks fade up as they enter the screen, once. These are CSS transitions on `transform` and `opacity`, so they run on the GPU.
+- **Reveals.** Headings rise word by word and blocks fade up as they enter the screen. They reset while off screen, so they play again every time you scroll back to them (the phone number rolls again too). These are CSS transitions on `transform` and `opacity`, so they run on the GPU.
 - **Reduced motion.** Visitors with "reduce motion" get native scrolling, a still hero (first DNA frame plus the headline) and no reveals.
 
 ## How the hero stays at 60 fps
 
 - Only the first frame is fetched at high priority (`<link rel=preload>`). The other frames download after the page has loaded, coarse to fine (every 32nd frame, then 16th … then every frame), a few at a time. Scrubbing works from the start; a frame that is not ready yet is replaced by the nearest one that is.
 - Frames are decoded off the main thread (`createImageBitmap`). Only a window around the current frame stays decoded (about 150 MB desktop, 60 MB phones). Keeping all 240 decoded would take about 880 MB.
-- The canvas is drawn only while the hero is on screen, and only when the frame changes.
+- The canvas is drawn only while the hero is on screen, and only when the picture changes.
+- No stepping: the shown position glides toward the scroll position and the two frames around it are cross-faded. No shaking: while a frame is still decoding, the fallback is the closest ready frame behind the playhead, never ahead.
+- No animation repaints every frame: the cyan text gradient is static, and the "Now booking" pulse is a scaled dot, not a box-shadow.
 - Nothing reads layout during scroll: the canvas size comes from a `ResizeObserver`, and the `object-fit: cover` crop is calculated once per resize. The canvas never holds more pixels than the frame has.
 - The pinned layer and the canvas have their own GPU layers (`will-change: transform; transform: translateZ(0)`).
 - No `backdrop-filter` or blend modes on anything that scrolls (only the fixed nav blurs, once it turns solid).

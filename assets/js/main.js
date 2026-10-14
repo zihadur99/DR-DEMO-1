@@ -3,8 +3,9 @@
    - Lenis gives the wheel momentum: the page keeps gliding after the wheel stops. It runs on
      gsap.ticker, so Lenis, ScrollTrigger and the hero canvas all share one requestAnimationFrame.
      Touch keeps the phone's own native momentum.
-   - Reveals are class toggles (.in) fired once by ScrollTrigger.batch; the motion itself is CSS
-     transitions on transform and opacity, so it runs on the GPU compositor.
+   - Reveals are class toggles (.in) from ScrollTrigger.batch. They replay every time a block
+     scrolls back into view (the class is removed once it is fully off screen). The motion itself
+     is CSS transitions on transform and opacity, so it runs on the GPU compositor.
    Visitors with "reduce motion" get native scrolling and no reveals. */
 (function () {
   "use strict";
@@ -77,10 +78,13 @@
   /* ---------- reveals ---------- */
   const items = $$("[data-r], [data-split]");
   if (GS && !RM){
+    const show = batch => batch.forEach((el, i) => { el.style.setProperty("--d", i * 90 + "ms"); el.classList.add("in"); });
+    const hide = batch => batch.forEach(el => el.classList.remove("in"));
     ScrollTrigger.batch(items, {
-      start: "top 88%",
-      once: true,
-      onEnter: batch => batch.forEach((el, i) => { el.style.setProperty("--d", i * 90 + "ms"); el.classList.add("in"); })
+      start: "top 92%",          // enters: a little above the bottom edge
+      end: "bottom 8%",          // leaves: a little below the top edge
+      onEnter: show, onEnterBack: show,
+      onLeave: hide, onLeaveBack: hide   // reset while off screen, so it animates again next time
     });
   } else items.forEach(el => el.classList.add("in"));
 
@@ -97,8 +101,11 @@
         col.appendChild(inner); odo.appendChild(col);
       } else { const d = document.createElement("span"); d.className = "dash"; d.textContent = c; d.setAttribute("aria-hidden", "true"); odo.appendChild(d); }
     }
-    const roll = () => $$(".col>span", odo).forEach(s => s.style.transform = `translate3d(0, ${-s.dataset.target}em, 0)`);
-    if (GS && !RM) ScrollTrigger.create({trigger: odo, start: "top 90%", once: true, onEnter: roll}); else roll();
+    const cols = $$(".col>span", odo);
+    const roll = () => cols.forEach(s => { s.style.transition = ""; s.style.transform = `translate3d(0, ${-s.dataset.target}em, 0)`; });
+    const reset = () => cols.forEach(s => { s.style.transition = "none"; s.style.transform = ""; });
+    if (GS && !RM) ScrollTrigger.create({trigger: odo, start: "top 92%", end: "bottom 8%", onEnter: roll, onEnterBack: roll, onLeave: reset, onLeaveBack: reset});
+    else roll();
   }
 
   /* ---------- nav: current section, solid bar after the hero starts moving, progress line ---------- */
@@ -124,26 +131,34 @@
     try { navigator.clipboard.writeText(num).then(ok, no); } catch (_) { no(); }
   });
 
-  /* ---------- premium cursor: a dot plus a lagging ring that swells over links ---------- */
+  /* ---------- cursor: a glowing dot that sits exactly on the pointer, and a thin halo that
+     follows it closely and opens up over links and buttons ---------- */
   if (FINE && !RM){
-    const ring = document.createElement("div"), dot = document.createElement("div");
-    ring.className = "cursor off"; dot.className = "cursor-dot off";
-    ring.setAttribute("aria-hidden", "true"); dot.setAttribute("aria-hidden", "true");
-    document.body.append(ring, dot);
+    const halo = document.createElement("div"), dot = document.createElement("div");
+    halo.className = "cursor off"; halo.innerHTML = "<i></i>"; dot.className = "cursor-dot off";
+    halo.setAttribute("aria-hidden", "true"); dot.setAttribute("aria-hidden", "true");
+    document.body.append(halo, dot);
     document.documentElement.classList.add("has-cursor");
-    let cX = -100, cY = -100, rX = -100, rY = -100, moved = false;
+    let cX = -100, cY = -100, hX = -100, hY = -100, moved = false, still = true;
+    const setOff = off => { halo.classList.toggle("off", off); dot.classList.toggle("off", off); };
     window.addEventListener("pointermove", e => {
-      cX = e.clientX; cY = e.clientY;
-      if (!moved){ moved = true; rX = cX; rY = cY; ring.classList.remove("off"); dot.classList.remove("off"); }
+      cX = e.clientX; cY = e.clientY; still = false;
+      if (!moved){ moved = true; hX = cX; hY = cY; setOff(false); }
     }, {passive: true});
-    document.addEventListener("pointerover", e => ring.classList.toggle("hover", !!(e.target.closest && e.target.closest("a, button"))));
-    document.addEventListener("pointerdown", () => ring.classList.add("down"));
-    document.addEventListener("pointerup", () => ring.classList.remove("down"));
-    document.documentElement.addEventListener("pointerleave", () => { ring.classList.add("off"); dot.classList.add("off"); moved = false; });
+    document.addEventListener("pointerover", e => {
+      const hot = !!(e.target.closest && e.target.closest("a, button"));
+      halo.classList.toggle("hover", hot); dot.classList.toggle("hover", hot);
+    });
+    document.addEventListener("pointerdown", () => halo.classList.add("down"));
+    document.addEventListener("pointerup", () => halo.classList.remove("down"));
+    document.documentElement.addEventListener("pointerleave", () => { setOff(true); moved = false; });
     const tick = () => {
-      if (!moved) return;
-      rX += (cX - rX) * .2; rY += (cY - rY) * .2;
-      ring.style.transform = `translate3d(${rX.toFixed(1)}px, ${rY.toFixed(1)}px, 0)`;
+      if (!moved || still) return;
+      // frame-rate independent follow: tight enough to feel attached, soft enough to feel smooth
+      const k = 1 - Math.pow(1 - .32, GS ? gsap.ticker.deltaRatio(60) : 1);
+      hX += (cX - hX) * k; hY += (cY - hY) * k;
+      if (Math.abs(cX - hX) < .1 && Math.abs(cY - hY) < .1){ hX = cX; hY = cY; still = true; }   // rest: stop writing styles
+      halo.style.transform = `translate3d(${hX.toFixed(2)}px, ${hY.toFixed(2)}px, 0)`;
       dot.style.transform = `translate3d(${cX}px, ${cY}px, 0)`;
     };
     if (GS) gsap.ticker.add(tick); else { const loop = () => { tick(); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
