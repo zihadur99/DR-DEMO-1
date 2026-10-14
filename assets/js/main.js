@@ -116,6 +116,16 @@
       onToggle: self => { if (self.isActive) navLinks.forEach(a => a.classList.toggle("cur", a.getAttribute("href") === "#" + sec.id)); }
     }));
     ScrollTrigger.create({start: 40, end: "max", onToggle: self => nav && nav.classList.toggle("solid", self.isActive)});
+    // light / dark: the nav takes the theme of the section under it, the cursor the one under the pointer's half of the screen
+    const navH = () => (nav ? nav.offsetHeight : 76) / 2;
+    $$("[data-theme]").forEach(sec => {
+      if (sec === nav) return;
+      const theme = sec.dataset.theme;
+      ScrollTrigger.create({trigger: sec, start: () => "top " + navH(), end: () => "bottom " + navH(),
+        onToggle: self => { if (self.isActive && nav) nav.dataset.theme = theme; }});
+      ScrollTrigger.create({trigger: sec, start: "top 50%", end: "bottom 50%",
+        onToggle: self => { if (self.isActive) document.documentElement.dataset.cursor = theme; }});
+    });
     if (progress) ScrollTrigger.create({start: 0, end: "max", onUpdate: self => { progress.style.transform = `scaleX(${self.progress.toFixed(4)})`; }});
     // the portrait drifts a little slower than the page
     const photo = $(".doctor-photo img");

@@ -18,8 +18,9 @@
      only while the hero is on screen and only when the picture would change.
    - No stepping: the displayed position glides toward the scroll position (frame-rate
      independent), and the two frames around it are cross-faded, so motion is continuous.
-   - Idle drift: when nobody scrolls, the helix keeps turning slowly back and forth over a few
-     frames (DRIFT, DRIFT_PERIOD), and CSS adds a slow camera push on the canvas.
+   - Idle motion is not done with frames (a 24 fps clip played slowly looks like stepping): the
+     canvas gets a slow CSS camera drift and floating light specks, both compositor-only, so they
+     move at the screen's full refresh rate.
    - No shaking: while a frame is still decoding, the fallback is always the closest ready frame
      behind the playhead, never one ahead, so the picture can't jump forward and back.
    - Nothing reads layout during scroll: the canvas size comes from a ResizeObserver, the
@@ -138,23 +139,13 @@
   }
 
   const state = {frame: 0};                    // target frame, set by ScrollTrigger
-  const TAU = Math.PI * 2;
-  const DRIFT = SMALL ? 4 : 8;                 // idle drift range in frames (about a third of a second of the clip)
-  const DRIFT_PERIOD = 9;                      // seconds for one slow forward-and-back
   const SMOOTH = .2;                           // extra easing per 60 Hz frame (touch scroll is not smoothed by Lenis)
   let shown = 0, dir = 1, onScreen = true, lastKey = "";
 
   function render(){
     if (!onScreen || !cw) return;
     const scrolled = Math.max(0, Math.min(N - 1, state.frame));
-    // Idle drift: even with no scrolling, the helix keeps turning slowly back and forth over a
-    // few frames, so the hero is never frozen. Scrolling still moves through the whole clip.
-    let target = scrolled;
-    if (animated){
-      const room = Math.min(DRIFT, N - 1);
-      const wave = .5 - .5 * Math.cos(performance.now() / 1000 * TAU / DRIFT_PERIOD);   // 0 → 1 → 0
-      target = Math.min(scrolled, N - 1 - room) + wave * room;
-    }
+    const target = scrolled;
     // frame-rate independent glide toward the target: the same feel at 60, 90 or 120 Hz
     const r = window.gsap ? gsap.ticker.deltaRatio(60) : 1;
     shown += (target - shown) * (1 - Math.pow(1 - SMOOTH, r));

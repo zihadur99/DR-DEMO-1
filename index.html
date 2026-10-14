@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Dr. Mariam Nasrallah | Family Medicine</title>
 <meta name="description" content="Dr. Mariam Nasrallah, Family Medicine physician. Preventative medicine, chronic condition management and women's health for every stage of life. Now accepting new patients — call 313-914-3666.">
-<meta name="theme-color" content="#061014">
+<meta name="theme-color" content="#0B2A31">
 <script>document.documentElement.classList.add("js")</script>
 <meta property="og:type" content="website">
 <meta property="og:title" content="Family Medicine with Dr. Mariam Nasrallah">
@@ -38,15 +38,13 @@
 </head>
 <body>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="gIcon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9F6FB"/><stop offset=".55" stop-color="#6FD8E8"/><stop offset="1" stop-color="#78AAFF"/></linearGradient><linearGradient id="gAccent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2C8394"/><stop offset=".5" stop-color="#C9F6FB"/><stop offset="1" stop-color="#6FD8E8"/></linearGradient></defs></svg>
-<div class="atmos" aria-hidden="true"><i></i></div>
-<div class="grain" aria-hidden="true"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><linearGradient id="gIcon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F6B76"/><stop offset=".6" stop-color="#2F8E9C"/><stop offset="1" stop-color="#5B86C9"/></linearGradient></defs></svg>
 <div class="progress" id="progress" aria-hidden="true"></div>
 
-<header class="nav" id="nav">
+<header class="nav" id="nav" data-theme="dark">
   <div class="bar">
     <a class="brand" href="#home" aria-label="Dr. Mariam Nasrallah — back to top">
-      <svg viewBox="0 0 32 32" aria-hidden="true"><rect x=".5" y=".5" width="31" height="31" rx="10" fill="#0A1A21" stroke="url(#gAccent)"/><path d="M5 17h5l2.2-5 3.6 10 2.6-7 1.6 2H27" fill="none" stroke="url(#gAccent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect class="b-bg" width="32" height="32" rx="10"/><path class="b-ln" d="M5 17h5l2.2-5 3.6 10 2.6-7 1.6 2H27" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span>Dr. Mariam Nasrallah<small>Family Medicine</small></span>
     </a>
     <nav aria-label="Sections">
@@ -58,8 +56,7 @@
       </ul>
     </nav>
     <a class="nav-book" href="#contact" aria-label="Book a visit">
-      <span class="nb-dot" aria-hidden="true"></span>
-      <span class="nb-txt">Book</span>
+      <span class="nb-txt">Book a visit</span>
       <span class="nb-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg></span>
     </a>
   </div>
@@ -70,12 +67,13 @@
   <!-- ============ HERO · DNA scroll sequence ============
        The section is pinned while scroll scrubs the canvas (assets/js/sequence.js).
        Its scroll length is frames × scroll-per-frame, so the clip ends exactly as the pin releases. -->
-  <section class="hero" id="home" aria-label="Welcome">
+  <section class="hero" id="home" data-theme="dark" aria-label="Welcome">
     <div class="hero-pin">
       <canvas id="seqCanvas" class="seq-canvas" aria-hidden="true"
         data-src="assets/seq/dna-v1/{set}/{n}.webp"
         data-sets='{"lg":{"frames":240,"w":1280,"h":720,"perFrame":0.0065},"sm":{"frames":120,"w":854,"h":480,"perFrame":0.011}}'></canvas>
       <div class="seq-shade" aria-hidden="true"></div>
+      <div class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
 
       <div class="beats">
         <div class="beat">
@@ -118,7 +116,7 @@
   </section>
 
   <!-- ============ ABOUT ============ -->
-  <section class="sec about" id="about" aria-labelledby="about-title">
+  <section class="sec about" data-theme="light" id="about" aria-labelledby="about-title">
     <div class="wrap about-grid">
       <div class="about-head">
         <div class="kicker" data-r><b>01</b><span class="mono">About · Background &amp; roots</span></div>
@@ -177,7 +175,7 @@
   </section>
 
   <!-- ============ SERVICES ============ -->
-  <section class="sec services" id="services" aria-labelledby="services-title">
+  <section class="sec services" data-theme="light" id="services" aria-labelledby="services-title">
     <div class="wrap">
       <div class="sec-head">
         <div class="kicker" data-r><b>02</b><span class="mono">Services · Clinical focus</span></div>
@@ -203,7 +201,7 @@
           <p>Ongoing, personalized care for long-term health conditions.</p>
           <div class="tags"><span>Ongoing</span><span>Personalized</span><span>Long-term</span></div>
         </article>
-        <article class="svc" data-r style="--c:var(--accent)">
+        <article class="svc" data-r style="--c:var(--plum)">
           <span class="tile"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="5.5"/><path d="M12 14v8M8.5 18.5h7"/></svg></span>
           <span class="mono num">02.3 · Every milestone</span>
           <h3>Women’s <span class="serif">Health</span></h3>
@@ -216,7 +214,7 @@
 
   <!-- ============ DOCTOR ============
        One profile card per physician: copy an <article class="doctor-card"> to add another. -->
-  <section class="sec doctors" id="doctor" aria-labelledby="doctor-title">
+  <section class="sec doctors" data-theme="light" id="doctor" aria-labelledby="doctor-title">
     <div class="wrap">
       <div class="sec-head">
         <div class="kicker" data-r><b>03</b><span class="mono">Your doctor</span></div>
@@ -250,7 +248,7 @@
   </section>
 
   <!-- ============ CONTACT / BOOKING ============ -->
-  <section class="sec contact" id="contact" aria-labelledby="contact-title">
+  <section class="sec contact" data-theme="dark" id="contact" aria-labelledby="contact-title">
     <div class="wrap">
       <div class="book-card">
         <span class="status" data-r><i></i>Now booking</span>
@@ -277,9 +275,9 @@
   </section>
 </main>
 
-<footer class="foot">
+<footer class="foot" data-theme="dark">
   <div class="wrap foot-in">
-    <a class="brand" href="#home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect x=".5" y=".5" width="31" height="31" rx="10" fill="#0A1A21" stroke="url(#gAccent)"/><path d="M5 17h5l2.2-5 3.6 10 2.6-7 1.6 2H27" fill="none" stroke="url(#gAccent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Dr. Mariam Nasrallah<small>Family Medicine</small></span></a>
+    <a class="brand" href="#home"><svg viewBox="0 0 32 32" aria-hidden="true"><rect class="b-bg" width="32" height="32" rx="10"/><path class="b-ln" d="M5 17h5l2.2-5 3.6 10 2.6-7 1.6 2H27" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Dr. Mariam Nasrallah<small>Family Medicine</small></span></a>
     <p class="disclaimer"><strong>Disclaimer:</strong> Content on this platform is for informational purposes only and does not substitute for professional medical advice. In an emergency, call 911.</p>
     <p class="mono">© <span id="yr">2026</span> Dr. Mariam Nasrallah</p>
   </div>

@@ -33,7 +33,7 @@ site.webmanifest, robots.txt, sitemap.xml
 - **Momentum.** [Lenis](https://github.com/darkroomengineering/lenis) smooths the mouse wheel and trackpad: when the wheel stops, the page keeps gliding and eases to a stop. The softness is `lerp` in `main.js` (`0.085`; lower is longer and softer). Phones keep their own native momentum.
 - **One clock.** Lenis, GSAP ScrollTrigger and the hero canvas all run on `gsap.ticker`, which is a single `requestAnimationFrame` loop. Nothing else runs per frame.
 - **Hero length matches the clip.** The hero is pinned for exactly `frames × perFrame × screen height` of scroll (`data-sets` on `#seqCanvas`). Desktop: 240 frames × 0.65% ≈ 1.4 screens. Phones: 120 frames × 1.1% ≈ 1.3 screens. The last frame lands exactly when the pin releases and About comes straight up behind it, so there is no empty scrolling. A shorter clip automatically gets a shorter hero.
-- **Idle motion.** Even when nobody scrolls, the helix keeps turning slowly back and forth over a few frames (`DRIFT` and `DRIFT_PERIOD` in `sequence.js`), and the canvas has a slow camera push (`@keyframes camera` in `style.css`).
+- **Idle motion.** When nobody scrolls, the canvas drifts with a slow camera move and specks of light float up (`@keyframes camera` and `.motes` in `style.css`). These are transform-only CSS animations, so they run at the screen's full refresh rate; slowing the 24 fps clip itself would look like stepping.
 - **Copy over the clip.** Two short lines fade through, then the welcome headline and booking buttons appear and stay as the hero scrolls away. They are the three `.beat` blocks in `index.html`.
 - **Reveals.** Headings rise word by word and blocks fade up as they enter the screen. They reset while off screen, so they play again every time you scroll back to them (the phone number rolls again too). These are CSS transitions on `transform` and `opacity`, so they run on the GPU.
 - **Reduced motion.** Visitors with "reduce motion" get native scrolling, a still hero (first DNA frame plus the headline) and no reveals.
@@ -55,7 +55,7 @@ site.webmanifest, robots.txt, sitemap.xml
 - **Another doctor**: copy the `<article class="doctor-card">` block in the Doctor section.
 - **Portrait**: replace `assets/img/dr-mariam-960.webp` and `-600.webp` (transparent background).
 - **Phone number**: search `313-914-3666` and `+13139143666` in `index.html` and `assets/js/main.js`.
-- **Colours**: the `:root` block at the top of `assets/css/style.css`. The palette is sampled from the hero DNA clip: teal-black background (`--bg`), ice-white type (`--ink`), holographic cyan accent (`--accent`, `--accent-hi`, `--accent-grad`, `--btn-grad` for buttons), plus teal (`--teal`) and sky blue (`--sky`) on the service cards. If the clip changes colour, sample its frames and update these.
+- **Colours**: the `:root` block at the top of `assets/css/style.css`. "Clinical luxe": a dark cinematic hero, then warm ivory / mist / sand sections on a light sheet, a deep-teal Contact band and a deep ink footer. One accent family: deep teal `--teal` (#0F6B76) on light, pale aqua `--aqua` (#9FE3EC) on dark; sky blue and plum only on the service cards. Each section declares `data-theme="light"` or `"dark"`, and buttons, text and the nav and cursor follow it.
 - **Fonts**: Inter Tight (headings), Cormorant Garamond italic (accents), Inter (body), Geist Mono (labels), from Google Fonts in `index.html`.
 - **Scroll feel**: `lerp` and `wheelMultiplier` in `main.js`. The hero length per frame is `perFrame` in `data-sets` in `index.html`.
 
