@@ -81,6 +81,41 @@ p{margin:0}
 /* fine frame lines, like a gallery mount */
 .frame{position:fixed;inset:clamp(10px, 1.4vw, 18px);z-index:4;pointer-events:none;border:1px solid rgba(244,238,228,.05);border-radius:clamp(14px, 1.6vw, 26px)}
 
+/* ---------- DNA scroll sequence (assets/js/sequence.js) ----------
+   html.intro: the page scrolls natively and GSAP ScrollTrigger pins .seq-pin while scroll scrubs
+   the canvas. Without .intro the page is locked again and the chapter stage takes over. */
+html{scrollbar-width:none}
+html::-webkit-scrollbar{display:none}
+html.intro{overflow-x:hidden;overflow-y:auto}
+html.intro body{height:auto;overflow:visible;touch-action:pan-y pinch-zoom}
+.seq{position:relative;z-index:5;height:100vh}
+.seq[hidden]{display:none}
+.seq-pin{position:relative;height:100vh;overflow:hidden;background:var(--bg);
+  will-change:transform;transform:translateZ(0);backface-visibility:hidden;contain:layout paint;
+  transition:opacity .9s ease, visibility 0s linear .9s}
+html:not(.intro) .seq-pin{opacity:0;visibility:hidden;pointer-events:none}
+html.intro .seq-pin{transition:opacity .5s ease}
+.seq-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover}
+/* blend the clip into the obsidian page and keep copy legible */
+.seq-shade{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg, rgba(7,8,11,.82) 0%, rgba(7,8,11,.45) 38%, transparent 65%),
+             linear-gradient(180deg, rgba(7,8,11,.7) 0%, transparent 22%, transparent 70%, rgba(7,8,11,.92) 100%),
+             radial-gradient(80% 70% at 70% 50%, rgba(216,181,122,.06), transparent 70%)}
+.beats{position:absolute;inset:0;padding-inline:calc(var(--gutter) + 8px)}
+.beat{position:absolute;left:calc(var(--gutter) + 8px);top:0;bottom:0;width:min(640px, 80vw);display:flex;flex-direction:column;justify-content:center;padding-bottom:4vh;pointer-events:none;will-change:transform, opacity}
+.beat:not(:first-child){opacity:0;visibility:hidden}
+.beat .mono{color:var(--gold);margin-bottom:22px}
+.beat h2{font-size:clamp(2.4rem,min(5.6vw,10vh),6rem);line-height:.98;color:var(--ink)}
+.beat-sub{color:var(--muted);margin-top:24px;max-width:46ch;font-size:1.04rem}
+.seq-foot{position:absolute;left:calc(var(--gutter) + 8px);right:calc(var(--gutter) + 8px);bottom:calc(28px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:20px}
+.seq-bar{flex:1;height:1px;background:var(--line);overflow:hidden}
+.seq-bar i{display:block;height:100%;background:var(--gold-grad);transform-origin:left;transform:scaleX(0);will-change:transform}
+.seq-skip{all:unset;cursor:pointer;padding:10px 16px;border-radius:999px;border:1px solid var(--line-2);color:var(--ink);background:rgba(17,18,23,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:border-color .3s, background .3s}
+.seq-skip:hover{border-color:var(--gold);background:rgba(216,181,122,.1)}
+.seq-skip:focus-visible{outline:1px solid var(--gold);outline-offset:3px}
+/* the stage's own HUD waits until the sequence hands over */
+html.intro :is(.hud,.dots,.hint,.frame,.progress){opacity:0 !important;visibility:hidden}
+
 /* ---------- stage + chapters ----------
    Performance: chapters animate with class-based CSS transitions on transform/opacity only,
    so the browser runs them on the GPU compositor. Nothing is recalculated per frame. */
@@ -297,6 +332,11 @@ html.has-cursor, html.has-cursor a, html.has-cursor button{cursor:none}
 }
 @media (max-width: 760px){
   .hud,.dots,.frame{display:none}
+  .beat{width:calc(100vw - 2 * var(--gutter));left:var(--gutter)}
+  .beat h2{font-size:clamp(2.2rem,11vw,3.4rem)}
+  .seq-shade{background:linear-gradient(180deg, rgba(7,8,11,.55) 0%, rgba(7,8,11,.35) 30%, rgba(7,8,11,.55) 60%, rgba(7,8,11,.95) 100%)}
+  .seq-foot{left:var(--gutter);right:var(--gutter);bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+  .seq-foot .mono:first-child{display:none}
   .hint{bottom:calc(14px + env(safe-area-inset-bottom,0px))}
   .hint span{height:26px}
   .nav .bar{padding:16px var(--gutter)}

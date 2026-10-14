@@ -19,6 +19,9 @@
   const LAST = CH.length - 1;
   const PORTRAIT = new Set([0, LAST]);          // chapters where the doctor is on screen
   const clampP = v => Math.max(0, Math.min(LAST, v));
+  // the DNA scroll sequence (sequence.js) runs before the stage; while it is active, native scroll belongs to it
+  const SEQ = window.HeroSequence || {available: false, active: false, skip(){}, reenter(){}};
+  const inIntro = () => SEQ.active;
 
   /* ---------- split headings into masked words ---------- */
   $$("[data-split]").forEach(el => {
@@ -72,19 +75,28 @@
   function go(i){ pT = clampP(Math.round(i)); settled = pT; clearTimeout(snapTimer); }
   function snap(){ const d = pT - settled; const t = clampP(Math.round(pT + Math.sign(d) * .38)); pT = t; settled = t; }
   function nudge(dc){ pT = clampP(pT + dc); clearTimeout(snapTimer); snapTimer = setTimeout(snap, 170); }
+  // resting on the first chapter: scrolling further up goes back into the DNA sequence
+  const atTop = () => settled === 0 && pT <= 0 && pS < .25;
 
+  let lastWheelT = 0, guardUntil = 0, guardHard = 0;
   window.addEventListener("wheel", e => {
     if (e.ctrlKey) return;
+    const now = performance.now(), gap = now - lastWheelT; lastWheelT = now;
+    if (inIntro()) return;
     e.preventDefault();
+    // swallow trackpad inertia carried over from the sequence until a new gesture starts
+    if (now < guardHard) return;
+    if (now < guardUntil){ if (gap > 160) guardUntil = 0; else return; }
     const unit = e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? VH() : 1;
     const dy = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (dy < 0 && gap > 160 && atTop() && SEQ.available){ SEQ.reenter(); return; }
     nudge(Math.max(-.6, Math.min(.6, dy * unit / (VH() * .5))));
   }, {passive: false});
 
-  let ty0 = 0, tp0 = 0, tLastY = 0, tLastT = 0, tVel = 0;
+  let ty0 = 0, tp0 = 0, tLastY = 0, tLastT = 0, tVel = 0, tTop = false;
   window.addEventListener("touchstart", e => {
-    if (e.touches.length !== 1) return;
-    touching = true; clearTimeout(snapTimer);
+    if (e.touches.length !== 1 || inIntro()) return;
+    touching = true; tTop = atTop(); clearTimeout(snapTimer);
     ty0 = tLastY = e.touches[0].clientY; tp0 = pT; tLastT = performance.now(); tVel = 0;
   }, {passive: true});
   window.addEventListener("touchmove", e => {
@@ -96,20 +108,22 @@
   }, {passive: false});
   window.addEventListener("touchend", () => {
     if (!touching) return; touching = false;
+    if (tTop && tLastY - ty0 > 60 && SEQ.available){ SEQ.reenter(); return; }
     const d = pT - settled;
     go(Math.abs(tVel) > .35 ? settled + Math.sign(tVel) * Math.max(1, Math.round(Math.abs(d))) : Math.round(pT + Math.sign(d) * .38));
   });
 
   window.addEventListener("keydown", e => {
     if (e.target.closest && e.target.closest("input, textarea")) return;
+    if (inIntro()) return;
     const k = e.key;
     if (["ArrowDown", "PageDown", " ", "Spacebar"].includes(k)){ e.preventDefault(); go(settled + 1); }
-    else if (["ArrowUp", "PageUp"].includes(k)){ e.preventDefault(); go(settled - 1); }
+    else if (["ArrowUp", "PageUp"].includes(k)){ e.preventDefault(); if (atTop() && SEQ.available) SEQ.reenter(); else go(settled - 1); }
     else if (k === "Home"){ e.preventDefault(); go(0); }
     else if (k === "End"){ e.preventDefault(); go(LAST); }
   });
 
-  $$("[data-go]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); go(+a.dataset.go); }));
+  $$("[data-go]").forEach(a => a.addEventListener("click", e => { e.preventDefault(); if (inIntro()) SEQ.skip(); go(+a.dataset.go); }));
   const dotsEl = $("#dots");
   if (dotsEl) CH.forEach((ch, i) => {
     const li = document.createElement("li");
@@ -122,7 +136,7 @@
   CH.forEach((ch, i) => ch.addEventListener("focusin", () => { if (cur !== i) go(i); }));
 
   const HASH = {home: 0, about: 1, care: 5, contact: 9};
-  const fromHash = () => { const h = location.hash.slice(1); if (h in HASH){ go(HASH[h]); pS = pT; } };
+  const fromHash = () => { const h = location.hash.slice(1); if (h in HASH){ if (inIntro()) SEQ.skip(); go(HASH[h]); pS = pT; } };
   fromHash(); window.addEventListener("hashchange", fromHash);
 
   /* ================= chapter switching (class-based) ================= */
@@ -154,6 +168,16 @@
     if (hint) hint.style.opacity = i === 0 ? 1 : 0;
   }
   CH.forEach(c => c.setAttribute("aria-hidden", "true"));
+
+  /* ---------- hand-off with the DNA sequence ---------- */
+  window.addEventListener("seq:exit", () => { go(0); pS = 0; const t = performance.now(); guardHard = t + 700; guardUntil = t + 1500; });
+  window.addEventListener("seq:enter", () => {
+    // put the stage to sleep so the hero reveal plays again on the way back down
+    if (cur >= 0){ CH[cur].classList.remove("active"); CH[cur].setAttribute("aria-hidden", "true"); }
+    cur = -1;
+    if (doc) doc.classList.remove("show");
+    setOdo(false);
+  });
 
   /* ---------- copy number ---------- */
   const copyBtn = $("#copyBtn");
@@ -234,6 +258,14 @@
     const bi = Math.floor(t / PERIOD);
     if (bi !== lastBeat && bpmEl){ lastBeat = bi; if (bi % 6 === 0) bpmEl.textContent = 70 + Math.round(Math.random() * 4); }
 
+    if (cursor){
+      rX += (cX - rX) * .18; rY += (cY - rY) * .18;
+      cursor.style.transform = `translate3d(${rX.toFixed(1)}px, ${rY.toFixed(1)}px, 0)`;
+      cDot.style.transform = `translate3d(${cX}px, ${cY}px, 0)`;
+    }
+    // during the DNA sequence the stage is covered: skip all of its work so the canvas owns the frame budget
+    if (inIntro()){ requestAnimationFrame(frame); return; }
+
     const gap = Math.abs(pT - pS);
     pS += (pT - pS) * (RM ? 1 : touching ? .25 : gap > 1.5 ? .14 : .085);
     if (gap < .0004) pS = pT;
@@ -250,12 +282,6 @@
     const palm = [palmBase[0] + px / innerWidth * 2, palmBase[1] - py / innerHeight * 2];
 
 
-    if (cursor){
-      rX += (cX - rX) * .18; rY += (cY - rY) * .18;
-      cursor.style.transform = `translate3d(${rX.toFixed(1)}px, ${rY.toFixed(1)}px, 0)`;
-      cDot.style.transform = `translate3d(${cX}px, ${cY}px, 0)`;
-    }
-
     if (scene) scene.render({t, dt, frameMs, p: pS, intro, gather, tiltX: tX, tiltY: tY, mouse: [mNX, mNY], mPow, palm});
     if (drawECG) drawECG(t);
     requestAnimationFrame(frame);
@@ -266,7 +292,7 @@
     if (started) return; started = true;
     measurePalm();
     document.documentElement.classList.add("ready");
-    setChapter(Math.round(pS));
+    if (!inIntro()) setChapter(Math.round(pS));
   }
   // the preloader stays at least 700 ms so its line finishes drawing
   const fontsReady = document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1200))]) : Promise.resolve();

@@ -1,0 +1,17 @@
+# Netlify / Cloudflare Pages cache rules.
+# Frames live in a versioned folder (assets/seq/dna-v1): when the video changes, a new folder
+# is made, so the old URLs can be cached forever.
+/assets/seq/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+/assets/img/*
+  Cache-Control: public, max-age=2592000
+/assets/css/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/assets/js/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+/
+  Cache-Control: public, max-age=0, must-revalidate

@@ -23,6 +23,30 @@ assets/
   img/avatar.webp     Small round face used in the hero
 ```
 
+## DNA scroll sequence (hero intro)
+
+Before the chapters, the page opens on a DNA clip that plays as you scroll, Apple-style. The clip is cut into WebP frames and drawn on a `<canvas>`, and GSAP ScrollTrigger maps scroll position to frame number (`scrub: 0.2`, `anticipatePin: 1`). Three lines of copy fade through as it plays. At the last frame the page locks and the chapter stage fades in. Scrolling up from the first chapter goes back into the sequence. "Skip intro", the nav links and deep links (`#about`, `#care`, `#contact`) go straight to the stage. Visitors with "reduce motion" never see it.
+
+```
+assets/js/sequence.js        Frame loading, decoding, canvas drawing, ScrollTrigger, hand-off
+assets/vendor/               GSAP 3.12.5 + ScrollTrigger (self-hosted, no CDN)
+assets/seq/dna-v1/lg/        240 frames, 1280×720 (desktop), ~8.6 MB in total
+assets/seq/dna-v1/sm/        120 frames, 854×480 (phones and Save-Data), ~2.9 MB in total
+tools/extract-frames.sh      Rebuilds the frames from a video with ffmpeg
+_headers, vercel.json, .htaccess   Cache headers for Netlify, Vercel and Apache/cPanel
+```
+
+How it stays smooth:
+- Only the first frame is fetched with high priority (`<link rel=preload>`). The rest download after the page has loaded, coarse to fine (every 32nd frame, then 16th … then every frame), six at a time. Scrubbing works right away; a missing frame is replaced by the nearest one that is ready.
+- Frames are decoded off the main thread (`createImageBitmap`). Only a window around the playhead stays decoded (about 150 MB desktop, 60 MB phones) and the farthest frames are released first, so memory stays bounded.
+- ScrollTrigger only changes a number. The canvas is drawn on `gsap.ticker` (requestAnimationFrame), only when the frame changes, and nothing reads layout during scroll (canvas size comes from a ResizeObserver).
+- The canvas never holds more pixels than the frame has, and the "cover" crop is calculated once per resize.
+- While the sequence plays, the 3D particle scene is paused so the canvas gets the whole frame budget.
+
+**Changing the clip:** run `tools/extract-frames.sh new-video.mp4 v2`, then in `index.html` change `dna-v1` to `dna-v2` (the canvas `data-src` and the two preload links) and update the frame counts in `data-sets`. The new folder name is what lets browsers cache frames forever.
+
+**Changing the length or copy:** the three `.beat` blocks in `index.html` hold the copy. The scroll length is `LEN` in `sequence.js` (4 screen heights on desktop, 3.2 on phones).
+
 ## Chapters
 
 | # | Chapter | Copy side | 3D shape |
@@ -46,6 +70,10 @@ assets/
 - **Colours**: the `:root` block at the top of `assets/css/style.css`. The palette is obsidian (`--bg`), ivory (`--ink`), champagne gold (`--gold`, `--gold-hi`, `--gold-grad`), with blush (`--rose`) and sage (`--sage`) as accents. The particle colours are the `sage`, `blush` and `gold` values in the shader in `assets/js/scene.js`.
 - **Fonts**: Inter Tight (headings), Cormorant Garamond italic (accents), Inter (body), Geist Mono (labels), loaded from Google Fonts in `index.html` and `404.html`.
 - **3D shapes**: the `CHAPTERS` list near the middle of `assets/js/scene.js` (shape, spin, size, brightness per chapter).
+
+## Caching
+
+`_headers` (Netlify, Cloudflare Pages), `vercel.json` (Vercel) and `.htaccess` (Apache/cPanel) set the same rules: frames and GSAP are cached for a year as immutable, images for 30 days, CSS/JS for a day, and HTML is always revalidated. On nginx, add `location /assets/seq/ { add_header Cache-Control "public, max-age=31536000, immutable"; }`. GitHub Pages cannot set headers (it caches for 10 minutes).
 
 ## Before going live
 
@@ -73,7 +101,7 @@ Mouse wheel or trackpad, touch swipe, arrow keys / Page Up / Page Down / Space /
 
 ## Performance
 
-- Total size of the site's own code is about 60 KB. The only external files are Google Fonts.
+- Total size of the site's own code is about 70 KB, plus GSAP (about 115 KB, self-hosted) and the DNA frames (loaded after the page). The only external files are Google Fonts.
 - Text animations are CSS transitions on transform and opacity only, so they run on the GPU and nothing is recalculated per frame.
 - Only the first shape is built at load; the rest are built in idle time. Phones get fewer particles.
 - If a device can't hold about 50 fps, the 3D canvas automatically lowers its resolution, then its particle count.

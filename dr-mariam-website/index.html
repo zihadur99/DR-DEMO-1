@@ -6,6 +6,8 @@
 <title>Dr. Mariam Nasrallah</title>
 <meta name="description" content="Dr. Mariam Nasrallah, Family Medicine physician. Preventative medicine, chronic condition management and women's health for every stage of life. Now accepting new patients — call 313-914-3666.">
 <meta name="theme-color" content="#07080B">
+<!-- the DNA scroll sequence plays first, unless motion is reduced or a chapter is deep-linked (assets/js/sequence.js) -->
+<script>document.documentElement.classList.add(matchMedia("(prefers-reduced-motion: reduce)").matches || /^#(about|care|contact)$/.test(location.hash) ? "no-intro" : "intro")</script>
 <meta property="og:type" content="website">
 <meta property="og:title" content="Family Medicine with Dr. Mariam Nasrallah">
 <meta property="og:description" content="Compassionate, patient-centered primary care for your whole family. Currently accepting new patients.">
@@ -30,7 +32,9 @@
   "sameAs": ["https://www.instagram.com/thefamilydocclinic/"]
 }
 </script>
-<link rel="preload" as="image" href="assets/img/dr-mariam-960.webp" imagesrcset="assets/img/dr-mariam-600.webp 600w, assets/img/dr-mariam-960.webp 960w" imagesizes="(max-width: 760px) 45vh, 66vh" fetchpriority="high">
+<link rel="preload" as="image" href="assets/img/dr-mariam-960.webp" imagesrcset="assets/img/dr-mariam-600.webp 600w, assets/img/dr-mariam-960.webp 960w" imagesizes="(max-width: 760px) 45vh, 66vh">
+<link rel="preload" as="fetch" crossorigin="anonymous" href="assets/seq/dna-v1/lg/0001.webp" media="(min-width: 761px)" fetchpriority="high">
+<link rel="preload" as="fetch" crossorigin="anonymous" href="assets/seq/dna-v1/sm/0001.webp" media="(max-width: 760px)" fetchpriority="high">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -60,6 +64,36 @@
 <div class="grain" aria-hidden="true"></div>
 <div class="frame" aria-hidden="true"></div>
 <div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- DNA scroll sequence: pinned canvas scrubbed by scroll, then hands off to the stage below -->
+<section class="seq" id="seq" aria-label="Introduction">
+  <div class="seq-pin">
+    <canvas id="seqCanvas" class="seq-canvas" aria-hidden="true"
+      data-src="assets/seq/dna-v1/{set}/{n}.webp"
+      data-sets='{"lg":{"frames":240,"w":1280,"h":720},"sm":{"frames":120,"w":854,"h":480}}'></canvas>
+    <div class="seq-shade" aria-hidden="true"></div>
+    <div class="beats">
+      <div class="beat">
+        <p class="mono">Family Medicine · Dr. Mariam Nasrallah</p>
+        <h2>Care that begins with <span class="serif gold">who you are.</span></h2>
+      </div>
+      <div class="beat">
+        <p class="mono">Whole-family care</p>
+        <h2>Every family is written <span class="serif gold">differently.</span></h2>
+        <p class="beat-sub">Preventative medicine, chronic condition management and women’s health, shaped around you and the people you love.</p>
+      </div>
+      <div class="beat">
+        <p class="mono">Now accepting new patients</p>
+        <h2>Meet <span class="serif gold">Dr.&nbsp;Mariam Nasrallah</span></h2>
+      </div>
+    </div>
+    <div class="seq-foot">
+      <span class="mono">Scroll to explore</span>
+      <span class="seq-bar" aria-hidden="true"><i></i></span>
+      <button class="seq-skip mono" id="seqSkip" type="button">Skip intro</button>
+    </div>
+  </div>
+</section>
 
 <header class="nav">
   <div class="bar">
@@ -260,6 +294,9 @@
 <ul class="dots" id="dots" aria-label="Chapters"></ul>
 <div class="hint mono" id="hint" aria-hidden="true"><b class="h-d">Scroll</b><b class="h-m">Swipe up</b><span></span></div>
 
+<script src="assets/vendor/gsap.min.js" defer></script>
+<script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+<script src="assets/js/sequence.js" defer></script>
 <script src="assets/js/scene.js" defer></script>
 <script src="assets/js/main.js" defer></script>
 </body>
