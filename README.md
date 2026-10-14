@@ -52,7 +52,7 @@ site.webmanifest, robots.txt, sitemap.xml
 - **Another doctor**: copy the `<article class="doctor-card">` block in the Doctor section.
 - **Portrait**: replace `assets/img/dr-mariam-960.webp` and `-600.webp` (transparent background).
 - **Phone number**: search `313-914-3666` and `+13139143666` in `index.html` and `assets/js/main.js`.
-- **Colours**: the `:root` block at the top of `assets/css/style.css`. Obsidian (`--bg`), ivory (`--ink`), champagne gold (`--gold`, `--gold-hi`, `--gold-grad`), blush (`--rose`), sage (`--sage`).
+- **Colours**: the `:root` block at the top of `assets/css/style.css`. The palette is sampled from the hero DNA clip: teal-black background (`--bg`), ice-white type (`--ink`), holographic cyan accent (`--accent`, `--accent-hi`, `--accent-grad`, `--btn-grad` for buttons), plus teal (`--teal`) and sky blue (`--sky`) on the service cards. If the clip changes colour, sample its frames and update these.
 - **Fonts**: Inter Tight (headings), Cormorant Garamond italic (accents), Inter (body), Geist Mono (labels), from Google Fonts in `index.html`.
 - **Scroll feel**: `lerp` and `wheelMultiplier` in `main.js`. The hero length per frame is `perFrame` in `data-sets` in `index.html`.
 
