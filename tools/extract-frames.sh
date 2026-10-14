@@ -5,7 +5,7 @@
 # assets/seq/dna-<version>/sm (every 2nd frame, 854 px wide, for phones).
 # Bump the version whenever the video changes: the folder name is what lets
 # the server cache frames forever (see _headers, vercel.json, .htaccess),
-# and then update data-src / data-frames on #seqCanvas in index.html.
+# and then update data-src and the frame counts in data-sets on #seqCanvas in index.html.
 set -euo pipefail
 SRC="${1:?usage: tools/extract-frames.sh video.mp4 [version]}"
 VER="${2:-v1}"

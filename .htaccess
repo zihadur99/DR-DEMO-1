@@ -1,5 +1,6 @@
 # Apache / cPanel: caching for the DNA scroll-sequence frames and other assets.
-ErrorDocument 404 /404.html
+# one-page site: unknown URLs land on the homepage
+ErrorDocument 404 /index.html
 
 <IfModule mod_mime.c>
   AddType image/webp .webp
