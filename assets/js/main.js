@@ -164,7 +164,7 @@
     if (GS) gsap.ticker.add(tick); else { const loop = () => { tick(); requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
 
     // magnetic buttons: they lean toward the pointer
-    $$(".btn").forEach(b => {
+    $$(".btn, .nav-book").forEach(b => {
       b.addEventListener("pointermove", e => {
         const r = b.getBoundingClientRect();
         b.style.setProperty("--mx", ((e.clientX - r.left - r.width / 2) * .22).toFixed(1) + "px");

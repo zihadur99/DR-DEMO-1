@@ -9,10 +9,11 @@
    - no scroll-behavior: smooth (Lenis owns scrolling). */
 :root{
   color-scheme:dark;
-  --bg:#061014; --bg-2:#0B1B22; --ink:#EAF8FA; --muted:#8EABB3; --line:rgba(220,244,248,.09); --line-2:rgba(220,244,248,.18);
-  --card:rgba(255,255,255,.028);
+  --bg:#061014; --bg-2:#0B1B22; --ink:#EAF8FA; --muted:#96B6BF; --line:rgba(220,244,248,.09); --line-2:rgba(220,244,248,.18);
+  --card:linear-gradient(160deg, rgba(111,216,232,.07), rgba(120,170,255,.025) 45%, rgba(255,255,255,.012));
+  --deep:#08202B; --abyss:#040C10;
   --accent:#6FD8E8; --accent-hi:#C9F6FB; --accent-lo:#2C8394; --sky:#78AAFF; --teal:#5CC8D4; --mint:#6EE7C8; --on-accent:#03171C;
-  --accent-grad:linear-gradient(100deg, #2C8394 0%, #5FCFE0 28%, #E2FBFE 46%, #6FD8E8 64%, #2C8394 100%);
+  --accent-grad:linear-gradient(100deg, #45BCD0 0%, #86E3F0 30%, #E2FBFE 48%, #7FDDED 66%, #5AA8F0 100%);
   --btn-grad:linear-gradient(100deg, #4CC2D6 0%, #8FE6F2 40%, #E2FBFE 58%, #6FD8E8 100%);
   --hair:linear-gradient(140deg, rgba(201,246,251,.5), rgba(201,246,251,.06) 38%, rgba(201,246,251,.02) 62%, rgba(201,246,251,.28));
   --f-display:"Inter Tight", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
@@ -27,7 +28,7 @@
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:var(--bg);scrollbar-width:none}
 html::-webkit-scrollbar{display:none}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 1.0625rem/1.65 var(--f-body);overflow-x:clip;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{margin:0;background:linear-gradient(180deg, var(--bg) 0%, #071820 28%, var(--deep) 55%, #06141B 80%, var(--abyss) 100%);color:var(--ink);font:400 1.0625rem/1.65 var(--f-body);overflow-x:clip;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 /* Lenis (assets/vendor/lenis.min.js) */
 html.lenis, html.lenis body{height:auto}
 .lenis.lenis-stopped{overflow:clip}
@@ -57,9 +58,9 @@ p,figure,blockquote,dl,dd,ol{margin:0}
 /* ---------- fixed background layers (painted once, never repainted on scroll) ---------- */
 .atmos{position:fixed;inset:-10%;z-index:0;pointer-events:none;overflow:hidden}
 .atmos::before,.atmos::after,.atmos i{content:"";position:absolute;border-radius:50%;will-change:transform}
-.atmos::before{width:60vmax;height:60vmax;left:20%;top:10%;background:radial-gradient(circle, rgba(111,216,232,.09), transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
-.atmos::after{width:50vmax;height:50vmax;right:-8%;top:-12%;background:radial-gradient(circle, rgba(120,170,255,.07), transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
-.atmos i{width:55vmax;height:55vmax;left:-12%;bottom:-18%;background:radial-gradient(circle, rgba(92,200,212,.06), transparent 62%);animation:drift3 38s ease-in-out infinite alternate}
+.atmos::before{width:60vmax;height:60vmax;left:20%;top:10%;background:radial-gradient(circle, rgba(111,216,232,.13), transparent 62%);animation:drift1 26s ease-in-out infinite alternate}
+.atmos::after{width:50vmax;height:50vmax;right:-8%;top:-12%;background:radial-gradient(circle, rgba(120,170,255,.11), transparent 62%);animation:drift2 32s ease-in-out infinite alternate}
+.atmos i{width:55vmax;height:55vmax;left:-12%;bottom:-18%;background:radial-gradient(circle, rgba(92,200,212,.10), transparent 62%);animation:drift3 38s ease-in-out infinite alternate}
 @keyframes drift1{to{transform:translate3d(-8vw, 6vh, 0) scale(1.12)}}
 @keyframes drift2{to{transform:translate3d(-10vw, 12vh, 0) scale(.9)}}
 @keyframes drift3{to{transform:translate3d(12vw, -8vh, 0) scale(1.1)}}
@@ -79,6 +80,18 @@ main,.foot{position:relative;z-index:2}
 .nav-links a{display:block;padding:.55em 1.1em;border-radius:999px;text-decoration:none;color:var(--muted);transition:color .3s, background .4s var(--ease)}
 .nav-links a:hover{color:var(--ink)}
 .nav-links a.cur{color:var(--on-accent);background:var(--accent-hi)}
+
+/* compact "Book" pill in the nav: live dot, label, arrow chip that turns on hover */
+.nav-book{--mx:0px;--my:0px;display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 5px 0 14px;border-radius:999px;text-decoration:none;
+  font:500 .84rem/1 var(--f-body);color:var(--ink);background:rgba(10,26,33,.6);border:1px solid rgba(111,216,232,.35);
+  box-shadow:0 0 0 0 rgba(111,216,232,0), inset 0 1px 0 rgba(255,255,255,.06);
+  transform:translate3d(var(--mx), var(--my), 0);transition:border-color .35s, background .35s, box-shadow .5s, transform .6s var(--ease)}
+.nb-dot{position:relative;width:7px;height:7px;border-radius:50%;background:var(--mint)}
+.nb-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--mint);animation:pingG 2.2s ease-out infinite}
+.nb-ic{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--btn-grad);color:var(--on-accent);transition:transform .5s var(--ease)}
+.nb-ic svg{width:14px;height:14px}
+.nav-book:hover{border-color:rgba(201,246,251,.7);background:rgba(111,216,232,.12);box-shadow:0 0 24px -4px rgba(111,216,232,.45)}
+.nav-book:hover .nb-ic{transform:rotate(45deg)}
 
 /* ---------- buttons ---------- */
 .btn{--mx:0px;--my:0px;display:inline-flex;align-items:center;gap:.75em;padding:1.05em 1.65em;border-radius:999px;text-decoration:none;font:500 .92rem/1 var(--f-body);letter-spacing:-.005em;border:1px solid var(--line-2);color:var(--ink);background:rgba(10,26,33,.6);cursor:pointer;position:relative;overflow:hidden;isolation:isolate;
@@ -109,7 +122,9 @@ main,.foot{position:relative;z-index:2}
 /* the pinned layer gets its own GPU layer so pinning and scrubbing never repaint the page */
 .hero-pin{position:relative;height:100vh;height:100svh;overflow:hidden;background:var(--bg);
   will-change:transform;transform:translateZ(0);backface-visibility:hidden;contain:layout paint}
-.seq-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;will-change:transform;transform:translateZ(0)}
+.seq-canvas{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;will-change:transform;transform:translateZ(0) scale(1.02);
+  animation:camera 22s ease-in-out infinite alternate}
+@keyframes camera{to{transform:translateZ(0) scale(1.09) translate3d(-1.2%, -.8%, 0)}}
 .seq-shade{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(90deg, rgba(6,16,20,.85) 0%, rgba(6,16,20,.45) 40%, transparent 66%),
              linear-gradient(180deg, rgba(6,16,20,.65) 0%, transparent 22%, transparent 68%, var(--bg) 100%)}
@@ -139,8 +154,19 @@ main,.foot{position:relative;z-index:2}
 .seq-static .seq-foot{display:none}
 
 /* ================= sections ================= */
-.sec{position:relative;padding-block:clamp(96px, 15vh, 170px)}
-.sec + .sec{border-top:1px solid var(--line)}
+.sec{position:relative;isolation:isolate;padding-block:clamp(96px, 15vh, 170px)}
+.sec + .sec{border-top:0}
+.sec + .sec::after{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg, transparent, rgba(111,216,232,.35) 30%, rgba(120,170,255,.3) 70%, transparent)}
+/* each section has its own light, so the page never reads as one flat colour (static paint) */
+.sec::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1}
+.about::before{background:radial-gradient(50% 60% at 0% 25%, rgba(111,216,232,.10), transparent 70%), radial-gradient(40% 50% at 100% 90%, rgba(120,170,255,.07), transparent 70%)}
+.services::before{background-image:radial-gradient(rgba(143,230,242,.16) 1px, transparent 1.6px);background-size:30px 30px;
+  -webkit-mask-image:radial-gradient(70% 60% at 50% 40%, #000, transparent 75%);mask-image:radial-gradient(70% 60% at 50% 40%, #000, transparent 75%)}
+.services{background:radial-gradient(60% 50% at 85% 10%, rgba(120,170,255,.08), transparent 70%)}
+.doctors::before{background:radial-gradient(45% 60% at 20% 55%, rgba(111,216,232,.12), transparent 70%), radial-gradient(40% 50% at 95% 20%, rgba(120,170,255,.09), transparent 70%)}
+.contact::before{background-image:linear-gradient(rgba(143,230,242,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(143,230,242,.06) 1px, transparent 1px);background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(60% 70% at 50% 60%, #000, transparent 75%);mask-image:radial-gradient(60% 70% at 50% 60%, #000, transparent 75%)}
+.sec > .wrap{position:relative;z-index:1}
 .kicker{display:flex;align-items:center;gap:14px;margin-bottom:24px}
 .kicker b{font:500 .64rem/1 var(--f-mono);color:var(--accent);letter-spacing:.2em;display:inline-flex;align-items:center;gap:14px}
 .kicker b::after{content:"";width:34px;height:1px;background:linear-gradient(90deg, var(--accent), transparent)}
@@ -178,7 +204,7 @@ main,.foot{position:relative;z-index:2}
 .svc-grid{display:grid;grid-template-columns:repeat(3, minmax(0,1fr));gap:16px}
 .svc{position:relative;display:flex;flex-direction:column;padding:32px 30px 30px;border-radius:26px;background:var(--card)}
 .js .svc.in{transition:opacity 1s var(--ease) var(--d,0ms), transform 1.3s var(--ease) var(--d,0ms), background .5s ease}
-.svc:hover{background:linear-gradient(160deg, color-mix(in srgb, var(--c) 10%, transparent), var(--card) 60%)}
+.svc:hover{background:linear-gradient(160deg, color-mix(in srgb, var(--c) 16%, transparent), rgba(255,255,255,.015) 65%)}
 .svc .tile{width:64px;height:64px;border-radius:20px;color:var(--c)}
 .svc .tile .ic{font-size:28px}
 .svc .num{margin-top:28px;color:var(--c)}
@@ -231,7 +257,7 @@ main,.foot{position:relative;z-index:2}
 .meta a:hover{background-size:100% 1px}
 
 /* footer */
-.foot{padding:48px 0 calc(40px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.foot{padding:48px 0 calc(40px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--abyss)}
 .foot-in{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px 40px}
 .disclaimer{flex:1 1 380px;max-width:62ch;font-size:.76rem;line-height:1.55;color:var(--muted)}
 .disclaimer strong{color:var(--ink);font-weight:500}
@@ -292,5 +318,5 @@ html.has-cursor, html.has-cursor a, html.has-cursor button{cursor:none}
 @media (prefers-reduced-motion: reduce){
   .btn,.js [data-r],.js .w>span{transform:none !important}
   .js [data-r]{opacity:1}
-  .atmos::before,.atmos::after,.atmos i,.btn-primary::after,.ring,.status i::after{animation:none !important}
+  .atmos::before,.atmos::after,.atmos i,.btn-primary::after,.ring,.status i::after,.nb-dot::after,.seq-canvas{animation:none !important}
 }
