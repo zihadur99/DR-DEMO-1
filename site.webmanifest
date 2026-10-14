@@ -1,0 +1,12 @@
+{
+  "name": "Dr. Mariam Nasrallah — Family Medicine",
+  "short_name": "Dr. Mariam",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#07080B",
+  "theme_color": "#07080B",
+  "icons": [
+    { "src": "assets/img/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "assets/img/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
